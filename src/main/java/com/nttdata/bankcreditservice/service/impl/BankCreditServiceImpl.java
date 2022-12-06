@@ -107,4 +107,10 @@ public class BankCreditServiceImpl implements BankCreditService {
                 customerId);
     }
 
+    @Override
+    public Mono<BankCredit> findByNumberCredit(String numberCredit) {
+        return this.bankCreditRepository.findByNumberCredit(numberCredit);
+    }
+
+
 }

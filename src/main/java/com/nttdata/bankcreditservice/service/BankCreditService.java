@@ -27,4 +27,6 @@ public interface BankCreditService {
     Mono<BankCredit> chargeCredit(Transaction transaction);
 
     Flux<BankCredit> findByCustomerId(String customerId);
+
+    Mono<BankCredit> findByNumberCredit(String numberCredit);
 }
