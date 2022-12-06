@@ -57,7 +57,7 @@ class BankCreditServiceApplicationTests {
 	@Test
 	void registerTest() {
 		BankCredit ba = new BankCredit(null, "6545487845", Float.parseFloat("1200"), Float.parseFloat("1200"), "20","19","05",
-				"636eea6e33ec63cafaf72fd2","", "1", "2022-12-01");
+				"636eea6e33ec63cafaf72fd2", "1", "2022-12-01");
 
 		client.post()
 				.uri("/bankCredit/register")
