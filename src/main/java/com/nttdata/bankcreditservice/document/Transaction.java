@@ -14,7 +14,7 @@ public class Transaction {
     private String transactionDate;
     //Amount of the transaction
     private float amount;
-    //Transaction's type: Deposit or Withdrawl
+    //Transaction's type
     private String type;
     //Associated client's ID
     private String idClient;

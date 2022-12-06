@@ -3,6 +3,7 @@ package com.nttdata.bankcreditservice.service.impl;
 import com.nttdata.bankcreditservice.document.BankCredit;
 import com.nttdata.bankcreditservice.document.BankDebt;
 import com.nttdata.bankcreditservice.document.Transaction;
+import com.nttdata.bankcreditservice.dto.TransactionDto;
 import com.nttdata.bankcreditservice.repository.BankCreditRepository;
 import com.nttdata.bankcreditservice.service.BankCreditService;
 import com.nttdata.bankcreditservice.service.BankDebtService;
@@ -13,6 +14,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 /**
  * Bank Credit Service Implementation.
@@ -36,6 +40,8 @@ public class BankCreditServiceImpl implements BankCreditService {
 
     @Override
     public Mono<BankCredit> register(BankCredit bankCredit) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        bankCredit.setCreationDate(LocalDate.now().format(formatter));
         return this.bankCreditRepository.save(bankCredit);
     }
 
@@ -60,17 +66,15 @@ public class BankCreditServiceImpl implements BankCreditService {
     }
 
     @Override
-    public Mono<BankCredit> payCredit(Transaction transaction) {
-        return findById(transaction.getIdAccount()).flatMap(x -> {
+    public Mono<BankCredit> payCredit(TransactionDto transaction) {
+        return findById(transaction.getAccountId()).flatMap(x -> {
             float newAmount = x.getAmount() + transaction.getAmount();
             if (newAmount <= x.getCredit()){
-                transaction.setType("credit payment");
-                transaction.setIdClient(x.getCustomerId());
-                transaction.setAccountAmount(newAmount);
+                Transaction t = new Transaction(LocalDate.now().toString(),transaction.getAmount(),"credit payment",x.getCustomerId(), transaction.getAccountId(), newAmount);
                 x.setAmount(newAmount);
                 return this.webClient.build().post().uri("/transaction/").
                         header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE).
-                        body(Mono.just(transaction), Transaction.class).
+                        body(Mono.just(t), Transaction.class).
                         retrieve().
                         bodyToMono(Transaction.class).
                         flatMap(y -> update(x));
@@ -81,17 +85,15 @@ public class BankCreditServiceImpl implements BankCreditService {
     }
 
     @Override
-    public Mono<BankCredit> chargeCredit(Transaction transaction) {
-        return findById(transaction.getIdAccount()).flatMap(x -> {
+    public Mono<BankCredit> chargeCredit(TransactionDto transaction) {
+        return findById(transaction.getAccountId()).flatMap(x -> {
             float newAmount = x.getAmount() - transaction.getAmount();
             if (newAmount >= 0){
-                transaction.setType("credit charge");
-                transaction.setIdClient(x.getCustomerId());
-                transaction.setAccountAmount(newAmount);
+                Transaction t = new Transaction(LocalDate.now().toString(),transaction.getAmount(),"credit charge",x.getCustomerId(), transaction.getAccountId(), newAmount);
                 x.setAmount(newAmount);
                 return this.webClient.build().post().uri("/transaction/").
                         header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE).
-                        body(Mono.just(transaction), Transaction.class).
+                        body(Mono.just(t), Transaction.class).
                         retrieve().
                         bodyToMono(Transaction.class).
                         flatMap(y -> update(x));

@@ -34,8 +34,6 @@ public class BankCredit {
     private String paymentDate;
     //id of the client
     private String customerId;
-    //full name of the client
-    private String customerName;
     //type of the bank credit
     private String type;
     //creation date of the bank account

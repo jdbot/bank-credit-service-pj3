@@ -2,6 +2,7 @@ package com.nttdata.bankcreditservice.service;
 
 import com.nttdata.bankcreditservice.document.BankCredit;
 import com.nttdata.bankcreditservice.document.Transaction;
+import com.nttdata.bankcreditservice.dto.TransactionDto;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -22,9 +23,9 @@ public interface BankCreditService {
 
     Mono<Boolean> existsById(String id);
 
-    Mono<BankCredit> payCredit(Transaction transaction);
+    Mono<BankCredit> payCredit(TransactionDto transaction);
 
-    Mono<BankCredit> chargeCredit(Transaction transaction);
+    Mono<BankCredit> chargeCredit(TransactionDto transaction);
 
     Flux<BankCredit> findByCustomerId(String customerId);
 

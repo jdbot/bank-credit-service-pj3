@@ -3,6 +3,7 @@ package com.nttdata.bankcreditservice.service.impl;
 import com.nttdata.bankcreditservice.document.BankCredit;
 import com.nttdata.bankcreditservice.document.BankDebt;
 import com.nttdata.bankcreditservice.document.Transaction;
+import com.nttdata.bankcreditservice.dto.TransactionDto;
 import com.nttdata.bankcreditservice.repository.BankDebtRepository;
 import com.nttdata.bankcreditservice.service.BankDebtService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
 
 /**
  * Bank Debt Service Implementation.
@@ -57,26 +62,27 @@ public class BankDebtServiceImpl implements BankDebtService {
 
     @Override
     public Flux<BankDebt> findByCustomerId(String customerId) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         return this.bankDebtRepository.findByCustomerId(
-                customerId).filter(a-> a.getBalance()> 0);
+                customerId).filter(a-> a.getBalance()> 0 &&
+                LocalDate.from(LocalDate.now())
+                        .compareTo(LocalDate.parse(a.getPaymentDate(),formatter)) > 0);
     }
 
     @Override
-    public Mono<BankDebt> payDebt(Transaction transaction) {
-        return this.bankDebtRepository.findByCreditId(transaction.getIdAccount()).flatMap(x -> {
-            float newAmount = x.getBalance() + transaction.getAmount();
-            x.setBalance(newAmount);
-            return update(x);
-        });
-    }
-
-    @Override
-    public Mono<BankDebt> chargeDebt(Transaction transaction) {
-        return this.bankDebtRepository.findByCreditId(transaction.getIdAccount()).flatMap(x -> {
+    public Mono<BankDebt> payDebt(TransactionDto transaction) {
+        return findById(transaction.getDebtId()).flatMap(x -> {
             float newAmount = x.getBalance() - transaction.getAmount();
             x.setBalance(newAmount);
-            return update(x);
+            Transaction t = new Transaction(LocalDate.now().toString(),transaction.getAmount(),"debt payment",x.getCustomerId(), transaction.getAccountId(), newAmount);
+            return this.webClient.build().post().uri("/transaction/").
+                header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE).
+                body(Mono.just(t), Transaction.class).
+                retrieve().
+                bodyToMono(Transaction.class).
+                flatMap(y -> update(x));
         });
     }
+
 
 }

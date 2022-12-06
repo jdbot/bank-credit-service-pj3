@@ -2,6 +2,7 @@ package com.nttdata.bankcreditservice.controller;
 
 import com.nttdata.bankcreditservice.document.BankDebt;
 import com.nttdata.bankcreditservice.document.Transaction;
+import com.nttdata.bankcreditservice.dto.TransactionDto;
 import com.nttdata.bankcreditservice.service.BankDebtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -69,17 +70,10 @@ public class BankDebtController {
         return bankDebtService.findByCustomerId(customerId);
     }
 
-    //Method to charge debt
-    @PutMapping("/chargeDebt")
-    @ResponseStatus(HttpStatus.OK)
-    public Mono<BankDebt> chargeDebt(@RequestBody Transaction transaction) {
-        return bankDebtService.chargeDebt(transaction);
-    }
-
-    //Method to charge debt
+    //Method to pay debt
     @PutMapping("/payDebt")
     @ResponseStatus(HttpStatus.OK)
-    public Mono<BankDebt> payDebt(@RequestBody Transaction transaction) {
+    public Mono<BankDebt> payDebt(@RequestBody TransactionDto transaction) {
         return bankDebtService.payDebt(transaction);
     }
 
